@@ -1,0 +1,227 @@
+<!DOCTYPE HTML>
+<head>
+  <style>
+    /* FINAL VER WITHOUT THE ARROWS */
+        body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #f5f5f5;
+      padding: 32px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      width: 95%;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    input[type="number"] {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    input[type="submit"] {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #80bdbd;
+      color: #ffffff;
+      font-size: 16px;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #28c8c8;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+    input {
+      width: 5vw;
+    }
+    span {
+      color: red;
+      font-weight: bold;
+    }
+       /* removes arrows for chrom */
+      input::-webkit-outer-spin-button, input::-webkit-inner-spin-button 
+      {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      /* removes arrows for FF */
+      input[type=number] 
+      {
+         -moz-appearance: textfield;
+      }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+  <form id="form-cc" method="post" action="validate.php">
+    Card Holder Name:   <br><input type="text" name="firstname" id="firstname" placeholder="FirstName"> <input type="text" name="lastname" id="lastname" placeholder="LastName"> <span id="error-name"></span><br>
+    Card Number: <br><input type="number" name="number1" id="number1" placeholder="0000"> <input type="number" name="number2" id="number2" placeholder="0000"> <input type="number" name="number3" id="number3" placeholder="0000"> <input type="number" name="number4" id="number4" placeholder="0000"> <input type="number" name="number5" id="number5" placeholder="(000)"> <span id="error-number"></span><br>
+    Expiry Date:   <br><input type="number" name="date-mm" id="date-mm" placeholder="MM"> <input type="number" name="date-yy" id="date-yy" placeholder="YY"> <span id="error-date"></span><br> 
+    CVV:    <br><input type="number" name="cvv" id="cvv" placeholder="000(0)"> <span id="error-cvv"></span><br>
+            <br><input type="submit" value="Submit"> <span id="error-submit"></span>
+  </form>
+  </div>
+</body>
+  <script>
+  var formCc = document.getElementById("form-cc");
+  var firstName = document.getElementById("firstname"); var lastName = document.getElementById("lastname");
+  var number1 = document.getElementById("number1"); var number2 = document.getElementById("number2"); var number3 = document.getElementById("number3"); var number4 = document.getElementById("number4"); var number5 = document.getElementById("number5");
+  var dateMM = document.getElementById("date-mm"); var dateYY = document.getElementById("date-yy");
+  var cvv = document.getElementById("cvv");
+
+  var errorName = document.getElementById("error-name");
+  var errorNumber = document.getElementById("error-number");
+  var errorDate = document.getElementById("error-date");
+  var errorCvv = document.getElementById("error-cvv");
+  var errorSubmit = document.getElementById("error-submit");
+
+  firstName.addEventListener("change", function() {
+    check("name");
+  });
+  lastName.addEventListener("change", function() {
+    check("name");
+  });
+
+  number1.addEventListener("change", function() {
+    check("number");
+  });
+  number2.addEventListener("change", function() {
+    check("number");
+  });
+  number3.addEventListener("change", function() {
+    check("number");
+  });
+  number4.addEventListener("change", function() {
+    check("number");
+  });
+  number5.addEventListener("change", function() {
+    check("number");
+  });
+
+  dateMM.addEventListener("change", function() {
+    check("date");
+  });
+  dateYY.addEventListener("change", function() {
+    check("date");
+  });
+
+  cvv.addEventListener("change", function() {
+    check("cvv");
+  });
+
+  formCc.addEventListener("submit", function(event) {
+    event.preventDefault();
+    fetchBackend();
+  });
+
+
+  function check(field) {
+    var currentMonth = new Date().getMonth()+1;
+    var currentYear = new Date().getFullYear()%100;
+
+    switch(field) {
+      case "name":
+        if (firstName.value.length < 1 || lastName.value.length < 1) {
+          errorName.innerText = "Fill in a first name and last name.";
+        }
+        else {
+          errorName.innerText = "";
+        }
+        break;
+      case "number":
+        if (number1.value.length != 4 || number2.value.length != 4 || number3.value.length != 4 || number4.value.length != 4) {
+          errorNumber.innerText = "Fill in four digits in each of the four fields.";
+        }
+        else if (number5.value.length) {
+          if (number5.value.length == 3 && !number1.value.startsWith(34) && !number1.value.startsWith(37)) {  
+            errorNumber.innerText = "For American Express cards the fifth field needs three digits, and the first field should start with 34 or 37.";
+          }
+        }
+        else {
+          errorNumber.innerText = "";
+        }
+        break;
+      case "date":
+        if (dateMM.value.length != 2 || dateYY.value.length != 2) {
+          errorDate.innerText = "Fill in two digits in both date fields.";
+        }
+        else if (dateMM.value < 00 || dateMM.value > 12 || dateYY.value < 00 || dateYY.value > 99) {
+          errorDate.innerText = "Fill in a valid date.";
+        }
+        else if ((dateYY.value<currentYear)||((dateMM.value <= currentMonth) && (dateYY.value == currentYear)))
+        {
+          errorDate.innerText = "The expiration date must be after the current month.";
+        }
+        else {
+          errorDate.innerText = "";
+        }
+        break;
+      case "cvv":
+        if (cvv.value.length < 3 || cvv.value.length > 4) {
+          errorCvv.innerText = "The CVV field can't have less than three or more than four digits.";
+        }
+        else if (cvv.value.length == 4 && number5.value.length != 3) {
+          errorCvv.innerText = "Only the CVV of American Express cards use four digits."; 
+        }
+        else {
+          errorCvv.innerText = "";
+        }
+        break;
+    }
+  }
+
+  function fetchBackend() {
+    fetch("validate.php", {
+      method: "POST",
+      body: new FormData(formCc)
+    }).then(function(response) {
+      return response.json();
+    }).then(function(data) {
+      if (data.includes("[green]")) {
+        data = data.replace("[green]", "");
+        errorSubmit.style.color = "green";
+      }
+      else {
+        errorSubmit.style.color = "red";
+      }
+      errorSubmit.innerText = data;
+    }).catch(function(error) {
+      errorSubmit.innerText = "Error: " + error;
+    });
+  }
+  </script>
+</html>
